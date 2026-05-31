@@ -158,29 +158,32 @@ class Inspector
         string cpuLabel = cpuType switch
         {
             0x014C => "x86 (32-bit)",
-            0x8664 => "Intel x64",
-            0x0200 => "AMD64",
+            0x8664 => "AMD64",
+            0x0200 => "Intel x64",
             _ => $"0x{cpuType:X4}"
         };
 
-        Row("CPU", cpuLabel);
-        Row("Формат", pe32 ? $"PE32  (0x{peKind:X4})" : $"PE32+  (0x{peKind:X4})");
+        Row("Архитектура", cpuLabel);
+        Row("Разрядность", pe32 ? $"32 bit  (0x{peKind:X4})" : $"64 bit  (0x{peKind:X4})");
         Row("Точка входа", $"0x{entryRva:X8}");
         Row("Базовый адрес", pe32 ? $"0x{loadBase:X8}" : $"0x{loadBase:X16}");
         Row("Размер в памяти", $"{memSize:N0} B");
-        Row("Выравн. память", $"0x{alignMem:X}");
-        Row("Выравн. файл", $"0x{alignDisk:X}");
+        Row("Выравн. память", $"0x{alignMem:X8}");
+        Row("Выравн. файл", $"0x{alignDisk:X8}");
 
         Block("ФЛАГИ");
 
-        if ((fileFlags & 0x0002) != 0) Console.WriteLine("   IMAGE_FILE_EXECUTABLE_IMAGE");
-        if ((fileFlags & 0x2000) != 0) Console.WriteLine("   IMAGE_FILE_DLL");
-        if ((fileFlags & 0x0020) != 0) Console.WriteLine("   IMAGE_FILE_LARGE_ADDRESS_AWARE");
-
-        if ((dllFlags & 0x0020) != 0) Console.WriteLine("   IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA");
-        if ((dllFlags & 0x0040) != 0) Console.WriteLine("   IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE  (ASLR)");
-        if ((dllFlags & 0x0100) != 0) Console.WriteLine("   IMAGE_DLLCHARACTERISTICS_NX_COMPAT  (DEP)");
-        if ((dllFlags & 0x4000) != 0) Console.WriteLine("   IMAGE_DLLCHARACTERISTICS_GUARD_CF  (CFG)");
+        Console.WriteLine("   Характеристики:");
+        if ((fileFlags & 0x0002) != 0) Console.WriteLine("   File is executable");
+        if ((fileFlags & 0x0020) != 0) Console.WriteLine("   App can handle > 2gb addresses");
+        if ((fileFlags & 0x2000) != 0) Console.WriteLine("   File is a DLL.");
+        Console.WriteLine("   ");
+        Console.WriteLine("   DLL Характеристики:");
+        if ((dllFlags & 0x0020) != 0) Console.WriteLine("   Image can handle a high entropy 64-bit virtual address space");
+        if ((dllFlags & 0x0040) != 0) Console.WriteLine("   DLL can move");
+        if ((dllFlags & 0x0100) != 0) Console.WriteLine("   Image is NX compatible");
+        if ((dllFlags & 0x4000) != 0) Console.WriteLine("   Guard CF");
+        Console.WriteLine("   ");
         if (rsrcLen > 0) Console.WriteLine("   Есть ресурсы");
         if (relLen > 0) Console.WriteLine("   Есть релокации");
 
